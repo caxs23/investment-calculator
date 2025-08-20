@@ -1,0 +1,314 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="적립식 복리 투자 계산기로 초기 투자와 월 적립을 통해 미래 가치를 계산하세요.">
+    <meta name="keywords" content="복리 계산기, 투자 수익율, 적립식 투자, 금융 계산기, 재무 설계">
+    <meta name="author" content="caxs23">
+    <!-- Google AdSense 사이트 확인 코드 -->
+    <meta name="google-adsense-account" content="ca-pub-0000000000000000">
+    <!-- Open Graph 태그 (소셜 미디어 공유 최적화) -->
+    <meta property="og:title" content="적립식 복리 투자 계산기">
+    <meta property="og:description" content="초기 투자와 월 적립 금액으로 복리 수익을 계산하세요.">
+    <meta property="og:url" content="https://caxs23.github.io/investment-calculator/">
+    <meta property="og:type" content="website">
+    <!-- Google AdSense 자동 광고 코드 -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-0000000000000000" crossorigin="anonymous"></script>
+    <title>적립식 복리 투자 계산기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        nav {
+            background-color: #34495e;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .calculator {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 24px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: right;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .summary {
+            background-color: #e9f7ef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .ad-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .calculator {
+                margin: 10px;
+                padding: 15px;
+            }
+            nav a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>적립식 복리 투자 계산기</h1>
+    </header>
+    <nav>
+        <a href="#home">홈</a>
+        <a href="#calculator">계산기</a>
+        <a href="#about">소개</a>
+        <a href="privacy.html">개인정보처리방침</a>
+    </nav>
+    <div class="calculator" id="calculator">
+        <h2>투자 수익율 계산</h2>
+        <label for="initialInvestment">초기 투자 금액 (원):</label>
+        <input type="text" id="initialInvestment" placeholder="예: 1,000,000" required>
+        
+        <label for="monthlyInvestment">월 적립 금액 (원):</label>
+        <input type="text" id="monthlyInvestment" placeholder="예: 50,000" required>
+        
+        <label for="annualRate">연 이자율 (%):</label>
+        <input type="text" id="annualRate" placeholder="예: 5" required>
+        
+        <label for="years">투자 기간 (년):</label>
+        <input type="text" id="years" placeholder="예: 10" required>
+        
+        <button onclick="calculateCompoundInterest()">계산하기</button>
+        
+        <!-- Google AdSense 광고 단위 (반응형) -->
+        <div class="ad-container">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-0000000000000000"
+                 data-ad-slot="1234567890"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+    <footer>
+        <p>&copy; 2025 적립식 복리 투자 계산기. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // 숫자 포맷팅 함수 (세 자리마다 쉼표 추가)
+        function formatNumberInput(input) {
+            let value = input.value.replace(/,/g, '');
+            if (!isNaN(value) && value !== '') {
+                input.value = parseFloat(value).toLocaleString('ko-KR');
+            } else {
+                input.value = '';
+            }
+        }
+
+        // 입력 필드에 포맷팅 이벤트 추가
+        const inputs = ['initialInvestment', 'monthlyInvestment', 'annualRate', 'years'];
+        inputs.forEach(id => {
+            const input = document.getElementById(id);
+            input.addEventListener('input', () => {
+                if (id !== 'annualRate' && id !== 'years') {
+                    formatNumberInput(input);
+                }
+            });
+        });
+
+        function calculateCompoundInterest() {
+            // 쉼표 제거 후 숫자 변환
+            const initialInvestment = parseFloat(document.getElementById('initialInvestment').value.replace(/,/g, '')) || 0;
+            const monthlyInvestment = parseFloat(document.getElementById('monthlyInvestment').value.replace(/,/g, '')) || 0;
+            const annualRate = parseFloat(document.getElementById('annualRate').value.replace(/,/g, '')) / 100 || 0;
+            const years = parseInt(document.getElementById('years').value.replace(/,/g, '')) || 0;
+            
+            if (initialInvestment <= 0 || monthlyInvestment < 0 || annualRate < 0 || years <= 0) {
+                document.getElementById('result').innerHTML = "유효한 값을 입력해주세요.";
+                return;
+            }
+
+            const months = years * 12;
+            const monthlyRate = annualRate / 12;
+            let futureValue = initialInvestment;
+            let yearlyResults = [];
+
+            // 연도별 복리 계산
+            for (let year = 1; year <= years; year++) {
+                const monthsInYear = year * 12;
+                let yearlyFutureValue = initialInvestment;
+                
+                // 해당 연도까지의 복리 계산
+                for (let i = 0; i < monthsInYear; i++) {
+                    yearlyFutureValue = yearlyFutureValue * (1 + monthlyRate) + monthlyInvestment;
+                }
+                
+                const totalInvested = initialInvestment + monthlyInvestment * monthsInYear;
+                const profit = yearlyFutureValue - totalInvested;
+                const profitRate = (profit / totalInvested) * 100;
+                
+                yearlyResults.push({
+                    year: year,
+                    futureValue: yearlyFutureValue,
+                    totalInvested: totalInvested,
+                    profit: profit,
+                    profitRate: profitRate
+                });
+            }
+
+            // 최종 결과 요약 (마지막 연도 결과)
+            const finalResult = yearlyResults[yearlyResults.length - 1];
+            const summaryHTML = `
+                <div class="summary">
+                    <h3>최종 결과 요약</h3>
+                    최종 금액: ${finalResult.futureValue.toLocaleString('ko-KR')} 원<br>
+                    총 투자 금액: ${finalResult.totalInvested.toLocaleString('ko-KR')} 원<br>
+                    수익: ${finalResult.profit.toLocaleString('ko-KR')} 원<br>
+                    수익률: ${finalResult.profitRate.toFixed(2)}%
+                </div>
+            `;
+
+            // 연도별 결과 테이블 생성
+            let tableHTML = `
+                <h3>연도별 투자 결과</h3>
+                <table>
+                    <tr>
+                        <th>연도</th>
+                        <th>최종 금액 (원)</th>
+                        <th>총 투자 금액 (원)</th>
+                        <th>수익 (원)</th>
+                        <th>수익률 (%)</th>
+                    </tr>
+            `;
+            yearlyResults.forEach(result => {
+                tableHTML += `
+                    <tr>
+                        <td>${result.year}</td>
+                        <td>${result.futureValue.toLocaleString('ko-KR')}</td>
+                        <td>${result.totalInvested.toLocaleString('ko-KR')}</td>
+                        <td>${result.profit.toLocaleString('ko-KR')}</td>
+                        <td>${result.profitRate.toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            tableHTML += '</table>';
+
+            document.getElementById('result').innerHTML = summaryHTML + tableHTML;
+        }
+    </script>
+</body>
+</html>

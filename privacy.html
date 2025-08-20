@@ -1,0 +1,161 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="적립식 복리 투자 계산기의 개인정보처리방침 - Google AdSense 및 쿠키 사용에 대한 정보">
+    <meta name="keywords" content="개인정보처리방침, 복리 계산기, 투자 계산기, Google AdSense">
+    <meta name="author" content="caxs23">
+    <!-- Open Graph 태그 (소셜 미디어 공유 최적화) -->
+    <meta property="og:title" content="개인정보처리방침 - 적립식 복리 투자 계산기">
+    <meta property="og:description" content="적립식 복리 투자 계산기의 개인정보처리방침입니다. Google AdSense 및 쿠키 사용 정보를 확인하세요.">
+    <meta property="og:url" content="https://caxs23.github.io/investment-calculator/privacy.html">
+    <meta property="og:type" content="website">
+    <title>개인정보처리방침 - 적립식 복리 투자 계산기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        nav {
+            background-color: #34495e;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 16px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .content {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+        p {
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        a {
+            color: #28a745;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            .content {
+                margin: 10px;
+                padding: 15px;
+            }
+            nav a {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>적립식 복리 투자 계산기</h1>
+    </header>
+    <nav>
+        <a href="index.html#home">홈</a>
+        <a href="index.html#calculator">계산기</a>
+        <a href="index.html#about">소개</a>
+        <a href="privacy.html">개인정보처리방침</a>
+    </nav>
+    <div class="content">
+        <h2>개인정보처리방침</h2>
+        <p>본 웹사이트(<a href="https://caxs23.github.io/investment-calculator/">https://caxs23.github.io/investment-calculator/</a>)는 사용자의 개인정보를 보호하고, Google AdSense를 통해 제공되는 광고에 대한 투명한 정보를 제공하기 위해 본 개인정보처리방침을 마련하였습니다.</p>
+        
+        <h3>1. 수집하는 정보</h3>
+        <p>본 웹사이트는 사용자가 직접 입력하는 정보(예: 초기 투자 금액, 월 적립 금액 등)를 수집하지 않으며, 서버에 저장하지 않습니다. 모든 계산은 브라우저 내에서 처리됩니다.</p>
+        
+        <h3>2. Google AdSense 및 쿠키</h3>
+        <p>본 웹사이트는 Google AdSense를 통해 광고를 제공합니다. Google AdSense는 쿠키 및 유사 기술을 사용하여 사용자 관심사에 맞는 광고를 표시할 수 있습니다. 이에 대한 자세한 내용은 <a href="https://policies.google.com/privacy">Google 개인정보처리방침</a> 및 <a href="https://policies.google.com/technologies/ads">Google 광고 정책</a>을 참조하세요.</p>
+        
+        <h3>3. 쿠키 사용 동의</h3>
+        <p>사용자는 웹사이트에 접속함으로써 쿠키 사용에 동의하는 것으로 간주됩니다. 쿠키를 비활성화하려면 브라우저 설정에서 쿠키를 차단할 수 있습니다. 단, 이 경우 일부 기능이 제한될 수 있습니다.</p>
+        
+        <h3>4. 제3자 링크</h3>
+        <p>본 웹사이트에는 외부 링크(예: Google 정책 페이지)가 포함될 수 있습니다. 해당 링크를 통해 이동한 웹사이트의 개인정보처리방침은 본 웹사이트와 무관합니다.</p>
+        
+        <h3>5. 문의</h3>
+        <p>개인정보처리방침에 대한 질문이 있는 경우, 아래 연락처로 문의해 주세요:</p>
+        <p>이메일: [사용자 이메일 주소 입력]</p>
+        
+        <p><a href="index.html">홈으로 돌아가기</a></p>
+    </div>
+    <footer>
+        <p>&copy; 2025 적립식 복리 투자 계산기. All rights reserved.</p>
+    </footer>
+</body>
+</html>
